@@ -14,8 +14,8 @@
       "author": {
         "name": "Coral Protocol"
       },
-      "homepage": "https://github.com/Coral-Protocol/coral-reef",
-      "repository": "https://github.com/Coral-Protocol/coral-reef",
+      "homepage": "https://github.com/Coral-Protocol/Reef",
+      "repository": "https://github.com/Coral-Protocol/Reef",
       "license": "MIT",
       "keywords": ["coral", "coral-protocol", "mcp", "multi-agent", "ai-agents"],
       "category": "ai-agents"

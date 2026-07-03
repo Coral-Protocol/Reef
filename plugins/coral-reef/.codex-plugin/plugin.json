@@ -7,8 +7,8 @@
     "email": "contact@coralprotocol.org",
     "url": "https://github.com/Coral-Protocol"
   },
-  "homepage": "https://github.com/Coral-Protocol/coral-reef",
-  "repository": "https://github.com/Coral-Protocol/coral-reef",
+  "homepage": "https://github.com/Coral-Protocol/Reef",
+  "repository": "https://github.com/Coral-Protocol/Reef",
   "license": "MIT",
   "keywords": [
     "coral",
@@ -27,7 +27,7 @@
       "Local Tooling",
       "Reference"
     ],
-    "websiteURL": "https://github.com/Coral-Protocol/coral-reef",
+    "websiteURL": "https://github.com/Coral-Protocol/Reef",
     "defaultPrompt": [
       "Use Coral Reef to log into the Coral session (I'll give MY_URL and a mode: review or takeover), then watch for mentions.",
       "Use Coral Reef to send a message to another agent in my team.",

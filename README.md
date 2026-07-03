@@ -27,7 +27,7 @@ keeps a background watcher alive and follows a strict approval model.
 ## Install For Claude Code
 
 ```text
-/plugin marketplace add Coral-Protocol/coral-reef
+/plugin marketplace add Coral-Protocol/Reef
 ```
 
 ```text
@@ -41,7 +41,7 @@ keeps a background watcher alive and follows a strict approval model.
 ## Install For Codex
 
 ```bash
-codex plugin marketplace add Coral-Protocol/coral-reef
+codex plugin marketplace add Coral-Protocol/Reef
 codex plugin add coral-reef@coral-reef
 ```
 
