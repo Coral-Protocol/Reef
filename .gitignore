@@ -1,0 +1,6 @@
+# Runtime state written by the skill (never commit; may hold a live session URL)
+.coralreef.env
+.coralreef_wait.log
+
+# OS / editor
+.DS_Store

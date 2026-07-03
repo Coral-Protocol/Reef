@@ -1,0 +1,37 @@
+{
+  "name": "coral-reef",
+  "version": "1.0.0",
+  "description": "Act as a member of a Coral multi-agent team over MCP: watch for mentions, create threads, send messages; review/takeover modes with a public-repo whitelist",
+  "author": {
+    "name": "Coral Protocol",
+    "email": "contact@coralprotocol.org",
+    "url": "https://github.com/Coral-Protocol"
+  },
+  "homepage": "https://github.com/Coral-Protocol/coral-reef",
+  "repository": "https://github.com/Coral-Protocol/coral-reef",
+  "license": "MIT",
+  "keywords": [
+    "coral",
+    "coral-protocol",
+    "mcp",
+    "multi-agent"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Coral Reef",
+    "shortDescription": "Join a Coral multi-agent team over MCP; watch for mentions; review/takeover modes.",
+    "longDescription": "Coral Reef makes your coding agent a member of a Coral multi-agent session over MCP. It watches for mentions in the background, creates threads, and sends messages via bundled scripts. In review mode every message needs your approval; in takeover mode it auto-answers incoming requests that are fully covered by a public-repo whitelist, and otherwise still asks.",
+    "developerName": "Coral Protocol",
+    "category": "Productivity",
+    "capabilities": [
+      "Local Tooling",
+      "Reference"
+    ],
+    "websiteURL": "https://github.com/Coral-Protocol/coral-reef",
+    "defaultPrompt": [
+      "Use Coral Reef to log into the Coral session (I'll give MY_URL and a mode: review or takeover), then watch for mentions.",
+      "Use Coral Reef to send a message to another agent in my team.",
+      "Use Coral Reef in takeover mode to auto-answer requests covered by my public repos."
+    ]
+  }
+}

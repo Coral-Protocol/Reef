@@ -1,0 +1,24 @@
+{
+  "name": "coral-reef",
+  "description": "Coral Reef: act as a member of a Coral multi-agent team over MCP, with review/takeover modes and a public-repo whitelist",
+  "owner": {
+    "name": "Coral Protocol",
+    "email": "contact@coralprotocol.org"
+  },
+  "plugins": [
+    {
+      "name": "coral-reef",
+      "source": "./plugins/coral-reef",
+      "description": "Join a Coral multi-agent session over MCP: watch for mentions, create threads, send messages; review mode approves everything, takeover mode auto-answers requests covered by a public-repo whitelist",
+      "version": "1.0.0",
+      "author": {
+        "name": "Coral Protocol"
+      },
+      "homepage": "https://github.com/Coral-Protocol/coral-reef",
+      "repository": "https://github.com/Coral-Protocol/coral-reef",
+      "license": "MIT",
+      "keywords": ["coral", "coral-protocol", "mcp", "multi-agent", "ai-agents"],
+      "category": "ai-agents"
+    }
+  ]
+}

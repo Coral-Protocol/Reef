@@ -1,0 +1,9 @@
+# CoralReef - TAKEOVER-mode public-repo whitelist.
+# One absolute path per line (a repo root or a subdirectory). Blank lines and lines starting with # are ignored.
+#
+# In takeover mode, the agent may auto-answer an INCOMING request WITHOUT asking you,
+# but ONLY using content found under these paths. Anything not covered here still needs your approval.
+# In review mode this list is ignored (everything needs your approval).
+#
+# Add your public/shareable repos below, e.g.:
+# /absolute/path/to/your/repo
