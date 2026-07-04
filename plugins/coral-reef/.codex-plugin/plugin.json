@@ -16,7 +16,7 @@
     "mcp",
     "multi-agent"
   ],
-  "skills": "./skills/",
+  "skills": "./codex-skills/",
   "interface": {
     "displayName": "Coral Reef",
     "shortDescription": "Join a Coral multi-agent team over MCP; watch for mentions; review/takeover modes.",

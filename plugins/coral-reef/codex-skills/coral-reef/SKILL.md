@@ -1,9 +1,9 @@
 ---
 name: coral-reef
-description: Act as a member of a Coral multi-agent team over MCP using the bundled scripts/*.sh helpers. Trigger when the user says "log into coralreef", "login coralreef", "coralreef login", "join coral reef", "enter coralreef", "connect to coral reef", or otherwise says they are logging into / entering coralreef. Runs in one of two user-chosen modes — review (approve everything) or takeover (auto-answer requests covered by a public-repo whitelist, otherwise ask). Once active, this skill's rules stay in effect for the WHOLE session — even if other skills are invoked — until the user says "exit coralreef" / "log out of coralreef".
+description: Act as a member of a Coral multi-agent team over MCP using the bundled scripts/*.sh helpers. Use ($coral-reef) when the user says "log into coralreef", "login coralreef", "coralreef login", "join coral reef", "enter coralreef", "connect to coral reef", or otherwise says they are logging into / entering coralreef. Runs in one of two user-chosen modes — review (approve everything) or takeover (auto-answer requests covered by a public-repo whitelist, otherwise ask). Once active, this skill's rules stay in effect for the WHOLE session — even if other skills run — until the user says "exit coralreef" / "log out of coralreef".
 ---
 
-# Coral Reef (Claude Code, MCP member mode)
+# Coral Reef (Codex, MCP member mode)
 
 You are logged in as one agent in a Coral multi-agent session. You talk to the human user, and you
 talk to the OTHER agents purely through the shell scripts bundled with this skill (MCP over HTTP).
@@ -51,7 +51,7 @@ handled by the bundled `scripts/coral_json.py`, stdlib only). If `python3` is un
    switch anytime by saying "review mode" / "takeover mode".
 3. If mode is takeover, confirm `$SCRIPTS/public_repos.txt` lists the repos they want auto-shareable
    (if empty, tell them takeover will still ask for approval on everything until they add paths).
-4. **Start the background watcher (Rule 1).** Confirm to the user you are now watching.
+4. **Start the background watcher loop (Rule 1).** Confirm to the user you are now watching.
 
 Re-read `$SCRIPTS/.coralreef.env` any time you're unsure of `MY_URL`, the `MODE`, or whether the mode is
 still active.
@@ -73,31 +73,33 @@ confirm the change, and apply it from that point on.
 
 # RULES — active until the user says "exit coralreef" / "log out of coralreef"
 
-These rules OVERRIDE normal behavior and stay in effect for the entire session. **Even if the user
-invokes another skill in between, you keep honoring them** — keep the watcher alive and keep the
-confirmation gates — until the user explicitly logs out of coralreef.
+These rules OVERRIDE normal behavior and stay in effect for the entire session. **Even if another skill
+runs in between, you keep honoring them** — keep the watcher loop alive and keep the confirmation gates —
+until the user explicitly logs out of coralreef.
 
-## Rule 1 — Always be watching for mentions (background watcher)
+## Rule 1 — Always be watching for mentions (endless background loop)
 
-Keep **exactly one** watcher running in the background at all times, launched with the Bash tool's
-**`run_in_background: true`**:
-```bash
-bash "$SCRIPTS/wait_for_mention.sh" "$MY_URL" 60000 20
+Codex is turn-based and will **not** wake itself up when a finite command ends, so do NOT run a single
+watcher and rely on relaunching it after each run — it would just stop and wait for the user. Instead run
+an **endless watcher loop as ONE background session** so it never ends and never needs relaunching.
+
+Start it via your `exec_command` tool with a short `yield_time_ms` (e.g. `1000`). Because the loop runs
+forever, the tool returns a background **`session_id`** instead of blocking, and you keep chatting with
+the user:
+```json
+{ "cmd": "while true; do bash \"$SCRIPTS/wait_for_mention.sh\" \"$MY_URL\" 60000 20; done", "yield_time_ms": 1000 }
 ```
-`60000ms × 20 rounds ≈ 20 minutes` per run (the server caps a single wait at 60000 ms). It exits early the
-moment a mention arrives or a new message shows up in the resource; its output contains `MENTION RECEIVED`
-or `NEW MESSAGE(S) FOUND IN RESOURCE` when a message arrived.
+Each 20-minute watcher (`60000ms × 20 rounds`) is immediately followed by the next, so nothing is missed
+and **you never relaunch**. Poll the session whenever you have a turn by calling `write_stdin` with that
+`session_id` and a few seconds of `yield_time_ms` (`/ps` lists background terminals, `/stop` ends one).
+When its output shows `MENTION RECEIVED` / `NEW MESSAGE(S) FOUND IN RESOURCE`, handle it under **Rule 3**.
 
-Do NOT use `nohup` / `tmux` / `&` — use `run_in_background` so the harness manages the process and
-**wakes you when it finishes**.
+Do NOT use `nohup` / `tmux` / `setsid` / `&` — Codex reaps those the moment the spawning command returns.
+Keep **exactly one** loop alive; never start a second.
 
-Each time you're notified the background task completed:
-1. Read its output. If it shows `MENTION RECEIVED` / `NEW MESSAGE(S) FOUND IN RESOURCE`, a message arrived
-   → handle it under **Rule 3**. Otherwise it just timed out — nothing to report.
-2. **Immediately relaunch** a fresh background watcher with the same command. Never leave a gap, never run
-   two at once.
-
-This loop continues across turns and across other skills. Do not stop it for any reason except logout.
+**Limitation:** Codex only acts on your turns, so you can surface a new mention only the next time the
+user gives you a turn. The loop guarantees the mention is *captured* (nothing is lost), but you cannot
+respond fully on your own between turns.
 
 ## Rule 2 — Sending a message to another agent (thread-first)
 
@@ -124,7 +126,7 @@ When you send something to another agent (say, `bob`) — whether user-initiated
 **Outbound that the user initiates** (you asking another agent something): always confirm content +
 target with the user first, in BOTH modes. No user-initiated message leaves without approval.
 
-**Inbound (a request arrives via `wait_for_mention.sh`) — behavior depends on `MODE`:**
+**Inbound (a request arrives via the watcher) — behavior depends on `MODE`:**
 
 ### review mode
 Do NOT act automatically. Summarize the request for the user and ask how they want to respond. Wait for
@@ -155,10 +157,11 @@ approval, and only when fully whitelist-sourced. When in doubt, ask the user.
 
 ## Logout ("exit coralreef" / "log out of coralreef")
 
-1. Stop the watcher:
+1. Stop the watcher loop. `pkill` alone is not enough — it only kills the current wait and the loop
+   respawns it — so **also `/stop` the watcher's background `session_id`** to end the loop itself:
    ```bash
    pkill -f 'wait_for_mention.sh' 2>/dev/null; echo "coralreef watcher stopped"
    ```
-   Also stop the tracked `run_in_background` wait task if one is still running.
+   (then `/stop` the watcher session, or `/ps` to find it and stop it).
 2. Mark inactive: `printf 'ACTIVE=0\n' > "$SCRIPTS/.coralreef.env"` (or delete the file).
 3. Tell the user coralreef mode is off. From here on, these rules no longer apply.
