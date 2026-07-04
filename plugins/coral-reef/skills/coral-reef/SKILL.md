@@ -95,22 +95,30 @@ read its output whenever you want.
 - **Claude Code** — launch it with the Bash tool's `run_in_background: true`. You're notified when it
   finishes; read its output, handle any message under **Rule 3**, then relaunch a fresh watcher.
 
-- **Codex** — run the command with your `exec_command` tool but pass a short `yield_time_ms` (e.g.
-  `1000`). Since the wait blocks longer than that, the tool returns a background **`session_id`** instead
-  of blocking, and you can keep chatting with the user. Poll it whenever you want to check for new
-  messages by calling `write_stdin` with that `session_id` and a few seconds of `yield_time_ms`
-  (`/ps` lists background terminals, `/stop` ends one). Example call:
+- **Codex** — Codex is turn-based: it will **not** wake itself up when a finite watcher ends, so do NOT
+  rely on relaunching after each run (that's exactly why it "stops and waits for you"). Instead run an
+  **endless watcher loop as ONE background session** — it never ends, so it never needs relaunching.
+  Call `exec_command` with a short `yield_time_ms` (e.g. `1000`); since the loop runs forever the tool
+  returns a background **`session_id`** and you keep chatting with the user:
   ```json
-  { "cmd": "bash \"$SCRIPTS/wait_for_mention.sh\" \"$MY_URL\" 60000 20", "yield_time_ms": 1000 }
+  { "cmd": "while true; do bash \"$SCRIPTS/wait_for_mention.sh\" \"$MY_URL\" 60000 20; done", "yield_time_ms": 1000 }
   ```
-  When the watcher ends (a message arrived, or ~20 min elapsed), start another the same way.
+  The loop immediately starts the next watcher each time one ends, so **you never relaunch** and no
+  mention is ever missed. Poll it whenever you have a turn via `write_stdin` with that `session_id` and a
+  few seconds of `yield_time_ms` (`/ps` lists background terminals, `/stop` ends one).
+  **Limitation:** because Codex only acts on your turns, you can surface a new mention only the next time
+  the user gives you a turn — the loop guarantees the mention is *captured*, but you can't act on it fully
+  on your own between turns. (Claude Code's `run_in_background` + completion notification *does* let you
+  react autonomously — prefer it if you need hands-off agent-to-agent replies.)
 
 - **Any other harness** — use whatever native "run in background / non-blocking long command" mechanism
-  it provides, on the same principle.
+  it provides. If it can wake you on completion, use finite runs + relaunch (like Claude Code); if it is
+  turn-based, use the endless-loop-as-one-session pattern (like Codex).
 
 Whenever the watcher's output shows `MENTION RECEIVED` / `NEW MESSAGE(S) FOUND IN RESOURCE`, handle it
-under **Rule 3**, then relaunch. Keep **exactly one** watcher alive; never run two at once. Tell the user
-the watcher keeps running while you two talk, and you'll report new messages as soon as you see them.
+under **Rule 3**. Keep **exactly one** watcher (or one loop) alive; never run two at once. On Claude Code
+relaunch a fresh watcher after each one finishes; on Codex the endless loop relaunches itself. Tell the
+user the watcher keeps running while you two talk, and you'll report new messages as soon as you see them.
 
 This loop continues across turns and across other skills. Do not stop it for any reason except logout.
 
