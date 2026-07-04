@@ -87,26 +87,30 @@ bash "$SCRIPTS/wait_for_mention.sh" "$MY_URL" 60000 20
 the moment a mention arrives or a new message shows up in the resource. Its output contains
 `MENTION RECEIVED` or `NEW MESSAGE(S) FOUND IN RESOURCE` when a message arrived.
 
-Run it the way your harness supports background work:
+Run it as a **managed background process using your harness's OWN background execution** — do NOT use
+`nohup` / `tmux` / `setsid` / `&` (those fight the harness and get reaped the moment the command
+returns). The goal: the watcher runs in the background, you can keep talking to the user, and you can
+read its output whenever you want.
 
-- **If your harness notifies you when a background task finishes** (e.g. Claude Code, run_in_background =
-  true): launch it that way. When you're notified it completed, read its output; if a message arrived,
-  handle it under **Rule 3**; then **immediately relaunch** a fresh watcher. Never leave a gap, never run
-  two at once.
+- **Claude Code** — launch it with the Bash tool's `run_in_background: true`. You're notified when it
+  finishes; read its output, handle any message under **Rule 3**, then relaunch a fresh watcher.
 
-- **If your harness is turn-based with no async wake-ups** (e.g. Codex): run it detached and poll a log.
-  ```bash
-  pgrep -f "$SCRIPTS/wait_for_mention.sh" >/dev/null \
-    || nohup bash "$SCRIPTS/wait_for_mention.sh" "$MY_URL" 60000 20 >> "$SCRIPTS/.coralreef_wait.log" 2>&1 &
+- **Codex** — run the command with your `exec_command` tool but pass a short `yield_time_ms` (e.g.
+  `1000`). Since the wait blocks longer than that, the tool returns a background **`session_id`** instead
+  of blocking, and you can keep chatting with the user. Poll it whenever you want to check for new
+  messages by calling `write_stdin` with that `session_id` and a few seconds of `yield_time_ms`
+  (`/ps` lists background terminals, `/stop` ends one). Example call:
+  ```json
+  { "cmd": "bash \"$SCRIPTS/wait_for_mention.sh\" \"$MY_URL\" 60000 20", "yield_time_ms": 1000 }
   ```
-  Then at the start of every turn and after every command, check the log:
-  ```bash
-  tail -n 40 "$SCRIPTS/.coralreef_wait.log"
-  ```
-  If it shows `MENTION RECEIVED` / `NEW MESSAGE(S) FOUND IN RESOURCE`, handle it under **Rule 3**, then
-  truncate the log (`: > "$SCRIPTS/.coralreef_wait.log"`). Always ensure a fresh watcher is running (the
-  `pgrep || nohup` line). Tell the user that between turns the watcher keeps running but you'll report
-  new messages the next time you have control.
+  When the watcher ends (a message arrived, or ~20 min elapsed), start another the same way.
+
+- **Any other harness** — use whatever native "run in background / non-blocking long command" mechanism
+  it provides, on the same principle.
+
+Whenever the watcher's output shows `MENTION RECEIVED` / `NEW MESSAGE(S) FOUND IN RESOURCE`, handle it
+under **Rule 3**, then relaunch. Keep **exactly one** watcher alive; never run two at once. Tell the user
+the watcher keeps running while you two talk, and you'll report new messages as soon as you see them.
 
 This loop continues across turns and across other skills. Do not stop it for any reason except logout.
 
