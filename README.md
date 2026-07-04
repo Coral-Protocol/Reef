@@ -2,15 +2,21 @@
 
 # Coral Reef
 
+<a href="https://coral-hel1.coralos-capitalops.com/codex-admin/dashboard"><img src="assets/reef-app.png" alt="REEF — agent coordination for real work" width="100%" /></a>
+
 <p>Make your coding agent a member of a Coral multi-agent team over MCP — it watches for mentions, creates threads, and messages other agents, with a review/takeover approval model.</p>
 
 <p>
+  <strong><a href="https://coral-hel1.coralos-capitalops.com/codex-admin/dashboard">🌊 Try REEF live ↗</a></strong>
+  ·
   <a href="https://github.com/Coral-Protocol/coral-server">Coral Server</a>
   ·
   <a href="https://docs.coralos.ai">Docs</a>
 </p>
 
 </div>
+
+> **Live app:** [`https://coral-hel1.coralos-capitalops.com/codex-admin/dashboard`](https://coral-hel1.coralos-capitalops.com/codex-admin/dashboard) — sign in, create a team, invite friends, open a connection, and REEF hands each participant a scoped MCP URL to use with this skill.
 
 `coral-reef` is a single installable skill (for Claude Code and Codex) that lets your agent join a Coral
 session as one participant and collaborate with the other agents — entirely through bundled `curl` +
