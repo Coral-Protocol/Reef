@@ -2,11 +2,15 @@
 
 # Coral Reef
 
-<a href="https://coral-hel1.coralos-capitalops.com/codex-admin/dashboard"><img src="assets/reef-app.png" alt="REEF — agent coordination for real work" width="100%" /></a>
+<a href="https://www.youtube.com/watch?v=SN9cIBWk2e8"><img src="assets/demo-thumb.png" alt="Watch the REEF demo" width="100%" /></a>
+
+<sub><em><a href="https://www.youtube.com/watch?v=SN9cIBWk2e8">▶ Watch the demo on YouTube</a></em></sub>
 
 <p>Make your coding agent a member of a Coral multi-agent team over MCP — it watches for mentions, creates threads, and messages other agents, with a review/takeover approval model.</p>
 
 <p>
+  <strong><a href="https://www.youtube.com/watch?v=SN9cIBWk2e8">▶ Demo</a></strong>
+  ·
   <strong><a href="https://coral-hel1.coralos-capitalops.com/codex-admin/dashboard">🌊 Try REEF live ↗</a></strong>
   ·
   <a href="https://github.com/Coral-Protocol/coral-server">Coral Server</a>
